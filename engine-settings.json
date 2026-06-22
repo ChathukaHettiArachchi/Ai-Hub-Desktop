@@ -1,0 +1,7 @@
+{
+  "enginePath": "",
+  "modelPath": "C:\\Users\\AvankaDellLap2\\Desktop\\Ai modal\\local ai\\LocalPrivateAIChat\\Models\\tinyllama-1.1b-chat-v1.0.Q2_K.gguf",
+  "port": 8080,
+  "contextSize": 14096,
+  "gpuLayers": 0
+}

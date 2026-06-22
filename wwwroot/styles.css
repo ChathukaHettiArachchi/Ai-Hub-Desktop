@@ -1,0 +1,430 @@
+:root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+    --text: #17201d;
+    --muted: #64748b;
+    --border: #dbe2ea;
+    --accent: #1e3a8a;
+    --accent-hover: #1e40af;
+    --user: #0f172a;
+    --assistant: #ffffff;
+    --danger: #dc2626;
+
+    font-family: 'Montserrat', Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+}
+
+
+.left-navbar {
+    width: 64px;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 12px;
+}
+
+.left-navbar button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: #1e293b;
+    color: white;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin: 0;
+}
+
+/* ========================================
+   SESSION LIST
+======================================== */
+
+.session {
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    transition: .2s;
+    border: 1px solid transparent;
+}
+
+.session:hover {
+    background: #f1f5f9;
+}
+
+.session.active {
+    background: #273E8C;
+    color: white;
+}
+
+.sessionContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.deleteSessionBtn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    opacity: .7;
+    color: inherit;
+}
+
+.deleteSessionBtn:hover {
+    opacity: 1;
+}
+
+/* ========================================
+   CHAT AREA
+======================================== */
+
+#chatArea {
+    background: #f8fafc;
+}
+
+.userBubble {
+    margin-left: auto;
+    max-width: 75%;
+    text-align: right;
+    background: #0f172a;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 5px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.userBubble [style*="background-color: rgb(255, 255, 0)"] {
+    color: #000 !important;
+}
+
+/* ========================================
+   AI CARDS
+======================================== */
+
+.modelRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 15px;
+    margin-top: 12px;
+    margin-bottom: 24px;
+}
+
+.modelCard {
+    width: 100%;
+}
+
+.aiCard {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #dbe2ea;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    font-size: 14px;
+}
+
+.aiHeader {
+    background: var(--accent);
+    color: white;
+    padding: 12px 16px;
+    font-weight: 600;
+  
+}
+
+.aiBody {
+    padding: 16px;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    word-break: break-word;
+}
+
+/* ========================================
+   MODEL CHIPS
+======================================== */
+
+.model-chip {
+    min-width: 90px;
+    height: 26px;
+    border: 1px solid #d1d5db;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+}
+
+.model-chip:hover {
+    background: #f1f5f9;
+}
+
+.model-chip.selected {
+    background: #1e3a8a;
+    color: white;
+    border-color: #1e3a8a;
+}
+
+/* ========================================
+   SETTINGS PANEL
+======================================== */
+
+#settingsPanel {
+    background: white;
+}
+
+#settingsPanel input,
+#settingsPanel select,
+#settingsPanel textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: white;
+}
+
+#settingsPanel textarea {
+    resize: vertical;
+}
+
+/* ========================================
+   ENGINE STATUS
+======================================== */
+
+#engineStatus,
+#downloadStatus {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* ========================================
+   EDITOR
+======================================== */
+
+#editor {
+    min-height: 120px;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    background: white;
+    line-height: 1.6;
+}
+
+#editor:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+#editor:empty::before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+/* ========================================
+   MESSAGE TEMPLATE
+======================================== */
+
+.message {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 760px);
+    gap: 14px;
+    margin: 0 auto 16px;
+    max-width: 980px;
+}
+
+.message-role {
+    color: var(--muted);
+    font-size: .82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.message-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.6;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 13px 14px;
+    background: white;
+}
+
+.message.user .message-content {
+    background: #e7f4ff;
+}
+
+.message.error .message-content {
+    border-color: #f4b4ac;
+    color: var(--danger);
+    background: #fff7f6;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+button {
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   SCROLLBAR
+======================================== */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 900px) {
+
+    .modelRow {
+        grid-template-columns: 1fr;
+    }
+
+    .userBubble {
+        max-width: 100%;
+    }
+
+    .message {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+
+    aside {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .flex.h-screen {
+        flex-direction: column;
+    }
+
+    #chatArea {
+        min-height: 400px;
+    }
+}
+
+
+.comparisonCards{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;
+    margin-top:12px;
+}
+
+@media(max-width:900px){
+    .comparisonCards{
+        grid-template-columns:1fr;
+    }
+}
+
+
+.aiBody{
+    min-height:150px;
+    max-height:300px;
+    overflow-y:auto;
+}
+
+.aiBody.streaming::after{
+    content:"▋";
+    animation:blink 1s infinite;
+}
+
+@keyframes blink{
+    50%{
+        opacity:0;
+    }
+}
+
+
+
+.sessionContent{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    width:100%;
+}
+
+.sessionText{
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+.sessionTitle{
+    font-size:14px;
+    font-weight:500;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.sessionDate{
+    font-size:11px;
+    color:#9ca3af;
+    margin-top:1px;
+    white-space:nowrap;
+}
+
+
+
+/* summernote styles */
+.note-statusbar {
+    display: none !important;
+}
+
+.note-toolbar{
+    background: #FAFAFA !important;
+}

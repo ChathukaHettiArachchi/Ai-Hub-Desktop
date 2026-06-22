@@ -1,0 +1,37 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+bin/
+obj/
+
+# Publish output
+publish/
+
+# Logs
+*.log
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Local AI Models
+Models/
+*.gguf
+
+# llama.cpp binaries
+engine/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Node (if used later)
+node_modules/
+
+# Temporary files
+*.tmp
+*.cache
