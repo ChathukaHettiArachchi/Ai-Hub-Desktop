@@ -62,7 +62,7 @@
                             Chancellor &amp; Gallaha Law Company
                         </p>
                         <p id="sessionTimestamp" class="mt-1 text-sm text-slate-600">
-                            2026 Jun 19 fri | 12:16 PM
+                           
                         </p>
                     </div>
 
@@ -121,7 +121,7 @@
 
                         <button id="newSessionBtn"
                             class="w-full bg-[#273E8C] hover:bg-blue-800 text-white rounded-lg py-2 text-sm">
-                            + New Session
+                            <span class="mr-2">+</span>New Session
                         </button>
 
                         <button id="clearChatsBtn"
@@ -151,17 +151,17 @@
 
                     </div>
 
-                    <div id="sessionList" class="flex-1 overflow-y-auto px-3 pb-3 mt-4 bg-[#FAFAFA] text-sm">
+                    <div id="sessionList" class="flex-1 overflow-y-auto px-4 pb-3 mt-4 bg-[#FAFAFA] text-sm">
                     </div>
 
                 </aside>
 
                 <!-- MAIN -->
-                <main class="flex-1 flex flex-col ml-2 mr-2.5 border border-slate-300 rounded-xl bg-[#ffffff]">
+                <main id="chatMain"  class="relative flex-1 flex flex-col ml-2 mr-2.5 border border-slate-300 rounded-xl bg-[#ffffff]">
 
                     <!-- HEADER -->
                     <div id="chatTitle" class="bg-[#FAFAFA] rounded-t-xl px-6 py-5 text-sm font-semibold ">
-                        New Chat
+                        
                     </div>
 
                     <!-- SETTINGS PANEL -->
@@ -302,10 +302,14 @@ If a point has already been made, do not repeat it.
                     <!-- CHAT -->
                     <div id="messages" class="flex-1 overflow-y-auto p-6 space-y-6">
                         <div id="emptyState" class="text-center text-slate-500 mt-10">
-                            Start a new conversation...
+                            
                         </div>
                     </div>
 
+                  <div id="chatComposer">  
+
+                    <div id="composerExpander">⌃</div>
+                    
                     <div class="bg-[#FAFAFA]  border-t border-slate-300 px-4 ">
 
                         <div class="flex items-center gap-4">
@@ -319,7 +323,7 @@ If a point has already been made, do not repeat it.
                             </span>
 
                             <!-- MODEL CHIPS -->
-                            <div class="bg-[#FAFAFA] px-4 py-2">
+                            <div id="modelSection" class="bg-[#FAFAFA] px-4 py-2">
 
                                 <!-- Private -->
                                 <div class="text-center text-[10px] text-slate-900 mb-2">
@@ -365,6 +369,7 @@ If a point has already been made, do not repeat it.
                         </div>
 
                     </div>
+                  </div>  
 
                 </main>
 

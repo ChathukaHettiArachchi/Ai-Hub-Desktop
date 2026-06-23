@@ -419,6 +419,55 @@ button:disabled {
 }
 
 
+.deleteIcon{
+    width:18px;
+    height:18px;
+   
+    transition:.2s;
+}
+
+
+#chatComposer {
+    position: relative;
+}
+
+#composerExpander {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 60px;
+    height: 20px;
+
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: ns-resize;
+    z-index: 999;
+}
+
+.chatComposerCentered {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 45%;
+    transform: translateY(-50%);
+}
+
+.chatComposerBottom {
+    position: static;
+    transform: none;
+}
+
+
+
+
 
 /* summernote styles */
 .note-statusbar {
@@ -427,4 +476,8 @@ button:disabled {
 
 .note-toolbar{
     background: #FAFAFA !important;
+}
+
+.userBubble p {
+    margin: 0 26px !important;
 }

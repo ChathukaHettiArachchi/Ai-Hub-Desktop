@@ -72,14 +72,22 @@ $(document).ready(function () {
             ['para', ['ul', 'ol', 'paragraph']],
             ['table', ['table']],
             ['insert', ['link', 'hr']],
-            ['view', ['codeview',]]
+            ['view', ['codeview',]],
+           
         ],
         callbacks: {
             onKeydown: function (e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    $('#send').trigger('click');
-                }
-            }
+
+    if (
+        e.key === 'Enter' &&
+        (!e.shiftKey)
+    ) {
+
+        e.preventDefault();
+
+        $('#send').trigger('click');
+    }
+}
         }
     });
 
@@ -166,6 +174,8 @@ let isGenerating = false;
 
 let sortDescending = true;
 
+let composerExpanded = false;
+
 // -----------------------------------------------------
 // SESSION HELPERS
 // -----------------------------------------------------
@@ -176,6 +186,36 @@ function getCurrentSession() {
     );
 }
 
+function updateComposerPosition() {
+
+    const composer =
+        document.getElementById("chatComposer");
+
+    const messages =
+        document.getElementById("messages");
+
+    const session =
+        getCurrentSession();
+
+    if (!composer || !messages) return;
+
+    if (!session || session.messages.length === 0) {
+
+        composer.classList.add(
+            "chatComposerCentered"
+        );
+
+        messages.style.display = "none";
+
+    } else {
+
+        composer.classList.remove(
+            "chatComposerCentered"
+        );
+
+        messages.style.display = "block";
+    }
+}
 function saveSessions() {
 
     localStorage.setItem(
@@ -242,7 +282,7 @@ function createSession() {
 
         id: Date.now().toString(),
 
-        title: "New Chat",
+        title: "",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
 
@@ -256,8 +296,10 @@ function createSession() {
 
     saveSessions();
 
+    updateComposerPosition();
     renderSessions();
     renderChat();
+
 }
 
 function deleteSession(id) {
@@ -351,6 +393,28 @@ filterBtn?.addEventListener(
 );
 
 
+function updateClock() {
+
+    const now = new Date();
+
+    const formatted =
+        `${now.getFullYear()} ` +
+        `${now.toLocaleString("en-US", { month: "short" })} ` +
+        `${String(now.getDate()).padStart(2, "0")} ` +
+        `${now.toLocaleString("en-US", { weekday: "short" }).toLowerCase()} | ` +
+        `${now.toLocaleString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        })}`;
+
+    document.getElementById("sessionTimestamp").textContent =
+        formatted;
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
 
 
 function renderSessions() {
@@ -405,14 +469,16 @@ function renderSessions() {
         </div>
 
         <div class="sessionDate">
-            ${formatSessionDate(session.updatedAt)}
+            ${session.messages.length > 0
+        ? formatSessionDate(session.updatedAt)
+        : ""}
         </div>
     </div>
 
     <button
         class="deleteSessionBtn"
         data-id="${session.id}">
-        🗑
+        <img src="/images/delete.png" alt="Delete" class="deleteIcon">
     </button>
 
 </div>
@@ -511,12 +577,16 @@ function renderChat() {
     const session =
         getCurrentSession();
 
+    updateComposerPosition();
+
     if (!session) {
         return;
     }
 
-    chatTitle.textContent =
-        session.title;
+    //hide session title 
+    // chatTitle.textContent =
+    //     session.title;
+        
 
     if (
         !session.messages.length
@@ -576,7 +646,9 @@ function renderMessage(
     user.className =
         "userBubble";
 
-    user.innerHTML = question;
+    user.innerHTML = question
+    .replace(/^<p>/i, "")
+    .replace(/<\/p>$/i, "");
 
     messagesContainer.appendChild(
         user
@@ -1567,7 +1639,7 @@ modelSelect
 // PART 3 - CHAT + STREAMING
 // =====================================================
 
-const MAX_HISTORY_MESSAGES = 10;
+const MAX_HISTORY_MESSAGES = 60;
 const MAX_MESSAGE_CHARACTERS = 6000;
 
 // -----------------------------------------------------
@@ -1580,10 +1652,7 @@ function setGenerating(value) {
 
     sendButton.disabled = value;
 
-    sendButton.textContent =
-        value
-            ? "Thinking..."
-            : "Send";
+   
 }
 
 // -----------------------------------------------------
@@ -1854,7 +1923,7 @@ async function sendMessage() {
 
     if (selectedModels.length === 0) {
 
-        alert("Select at least one model.");
+        alert("Select at least one Engine.");
         return;
     }
 
@@ -1909,6 +1978,7 @@ async function sendMessage() {
     session.messages.push(
         chatItem
     );
+    updateComposerPosition();
 
     session.updatedAt =
         new Date().toISOString();
@@ -2201,6 +2271,81 @@ promptInput
         }
     );
 
+    const expander =
+    document.getElementById(
+        "composerExpander"
+    );
+
+let isDragging = false;
+let startY = 0;
+let startHeight = 110;
+
+expander?.addEventListener(
+    "mousedown",
+    (e) => {
+
+        const editor =
+            document.querySelector(
+                ".note-editable"
+            );
+
+        isDragging = true;
+
+        startY = e.clientY;
+
+        startHeight =
+            editor.offsetHeight;
+
+        e.preventDefault();
+    }
+);
+
+document.addEventListener(
+    "mousemove",
+    (e) => {
+
+        if (!isDragging) return;
+
+        const editor =
+            document.querySelector(
+                ".note-editable"
+            );
+
+        const delta =
+            startY - e.clientY;
+
+        const newHeight =
+            Math.max(
+                110,
+                Math.min(
+                    startHeight + delta,
+                    500
+                )
+            );
+
+        editor.style.minHeight =
+            `${newHeight}px`;
+
+        editor.style.maxHeight =
+            `${newHeight}px`;
+
+        composerExpanded =
+            newHeight > 200;
+
+        expander.textContent =
+            composerExpanded
+                ? "⌄"
+                : "⌃";
+    }
+);
+
+document.addEventListener(
+    "mouseup",
+    () => {
+
+        isDragging = false;
+    }
+);
 
 
 
