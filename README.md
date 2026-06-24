@@ -1,34 +1,102 @@
-# Local Private AI Chat
+# AI Hub Desktop
 
-An Ollama-free local chat app. The ASP.NET Core app manages a local `llama.cpp` server process and chats with downloaded `.gguf` models such as Llama, Mistral, Qwen, Gemma, and other GGUF-compatible models.
+AI Hub Desktop is a privacy-focused local AI platform that allows you to run, manage, and compare multiple AI models directly on your computer. Built on ASP.NET Core and llama.cpp, it provides a modern chat experience without requiring cloud services, API keys, or Ollama.
 
-## Privacy defaults
+## Features
 
-- No cloud API keys.
-- No Ollama dependency.
-- No external scripts or analytics.
-- Chat traffic goes only to `127.0.0.1`.
-- After the engine and model files are installed, chat works without internet.
+### Local AI Execution
 
-## What you need once
+* Run GGUF models locally using llama.cpp
+* No Ollama dependency
+* No cloud APIs required
+* Fully offline after setup
 
-1. Download or build `llama.cpp` for Windows.
-2. Locate `llama-server.exe`.
-3. Download a GGUF model file, for example a Mistral or Llama instruct model.
+### Multi-Model Chat
 
-Recommended folder layout:
+* Select one or two AI models
+* Compare responses side-by-side
+* Stream responses in real time
+* Evaluate different models on the same prompt
+
+### Modern Chat Experience
+
+* Rich text message editor
+* Text formatting support (bold, italic, underline, lists, tables, links, etc.)
+* Session-based conversations
+* Automatic chat history storage
+* Session search and sorting
+* Responsive desktop interface
+
+### Privacy First
+
+* All processing happens locally
+* No external AI services
+* No analytics or tracking
+* No data leaves your machine
+* Chat traffic remains on `127.0.0.1`
+
+## Supported Models
+
+AI Hub Desktop supports any GGUF model compatible with llama.cpp, including:
+
+* Llama 3.x
+* TinyLlama
+* Phi
+* Qwen
+* Gemma
+* Mistral
+* MiniCPM
+* Other GGUF-compatible models
+
+## Requirements
+
+### .NET
+
+* .NET 9 SDK or later
+
+### llama.cpp
+
+Download a Windows build of llama.cpp and place the engine files in the application's `engine` folder.
+
+### GGUF Models
+
+Download one or more GGUF models and place them in the `Models` folder.
+
+Example:
 
 ```text
-C:\llama.cpp\llama-server.exe
-C:\models\mistral-7b-instruct.gguf
+Models/
+├── Llama-3.2-3B-Instruct-Q4_K_M.gguf
+├── tinyllama-1.1b-chat-v1.0.Q2_K.gguf
+└── Phi-4.gguf
 ```
 
-You can also put `.gguf` files in this app's `Models` folder.
+## Project Structure
 
-## Run the app
+```text
+AI-Hub-Desktop/
+│
+├── Models/
+├── engine/
+├── wwwroot/
+├── Program.cs
+├── appsettings.json
+├── engine-settings.json
+└── LocalPrivateAIChat.csproj
+```
 
-```powershell
-cd C:\Users\SajithG\Documents\Codex\2026-06-15\i-want-an-app-jus-like\outputs\LocalPrivateAIChat
+## Running the Application
+
+Clone the repository:
+
+```bash
+git clone https://github.com/ChathukaHettiArachchi/Ai-Hub-Desktop.git
+cd Ai-Hub-Desktop
+```
+
+Run:
+
+```bash
 dotnet run
 ```
 
@@ -38,16 +106,102 @@ Open:
 http://127.0.0.1:5055
 ```
 
-## Use
+## Using AI Hub Desktop
 
-1. Set **llama.cpp server** to your `llama-server.exe` path.
-2. Select a `.gguf` model or paste the model path.
-3. Save.
-4. Start.
-5. Chat.
+### Single Model Chat
 
-## Notes
+1. Start the application
+2. Select a model
+3. Enter your prompt
+4. Receive a streamed response
 
-- The app uses llama.cpp's OpenAI-compatible endpoint: `/v1/chat/completions`.
-- The app starts the engine with `--host 127.0.0.1`, so it is local to this machine.
-- Increase **GPU layers** if your GPU supports it. Leave it at `0` for CPU-only mode.
+### Compare Mode
+
+1. Select two models
+2. Enter a prompt
+3. Both models generate responses simultaneously
+4. Compare outputs side-by-side
+
+### Session Management
+
+* Create new chat sessions
+* Search previous conversations
+* Sort sessions by date
+* Delete individual sessions
+* Clear chat history
+
+## Technical Overview
+
+### Frontend
+
+* HTML5
+* Tailwind CSS
+* JavaScript
+* Summernote Rich Text Editor
+
+### Backend
+
+* ASP.NET Core (.NET 9)
+* Server-Sent Events (SSE) streaming
+* Local model management
+* llama.cpp integration
+
+### Storage
+
+* Local session storage
+* Local configuration files
+* No external database required
+
+## Architecture
+
+```text
+User
+  │
+  ▼
+AI Hub Desktop UI
+  │
+  ▼
+ASP.NET Core Backend
+  │
+  ▼
+llama.cpp Server
+  │
+  ▼
+GGUF Model
+```
+
+## Current Features
+
+✅ Local AI execution
+
+✅ Multi-model comparison
+
+✅ Rich text prompts
+
+✅ Session history
+
+✅ Real-time streaming responses
+
+✅ Model management
+
+✅ Local-only processing
+
+✅ Modern desktop-style interface
+
+## Roadmap
+
+* Workpad
+* My Links
+* Private Chat Mode
+* File Upload Support
+* Agent Workflows
+* Additional Model Management Features
+* Export Conversations
+
+## License
+
+This project is provided for educational, research, and personal use.
+
+---
+
+Built with ASP.NET Core, llama.cpp, and GGUF models.
