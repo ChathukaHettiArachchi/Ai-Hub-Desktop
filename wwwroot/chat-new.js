@@ -59,12 +59,31 @@ popup?.addEventListener("click", (e) => {
 
 
 
+
+const MicButton = function (context) {
+    const ui = $.summernote.ui;
+
+    return ui.button({
+        contents: `
+            <img src="/images/mic.png"
+                 style="width:16px;height:16px;">
+        `,
+        tooltip: 'Voice Input',
+        click: function () {
+            $('#voiceBtn').trigger('click');
+        }
+    }).render();
+};
+
 $(document).ready(function () {
     $('#prompt').summernote({
         placeholder: 'Message the selected agent(s)...',
         tabsize: 2,
         height: 110,
         disableResizeEditor: true,
+
+        buttons: { mic: MicButton },
+
         toolbar: [
             ['style', ['clear']],
             ['font', ['bold', 'italic', 'underline', 'strikethrough']],
@@ -73,21 +92,21 @@ $(document).ready(function () {
             ['table', ['table']],
             ['insert', ['link', 'hr']],
             ['view', ['codeview',]],
-           
+            ['voice', ['mic']]
         ],
         callbacks: {
             onKeydown: function (e) {
 
-    if (
-        e.key === 'Enter' &&
-        (!e.shiftKey)
-    ) {
+                if (
+                    e.key === 'Enter' &&
+                    (!e.shiftKey)
+                ) {
 
-        e.preventDefault();
+                    e.preventDefault();
 
-        $('#send').trigger('click');
-    }
-}
+                    $('#send').trigger('click');
+                }
+            }
         }
     });
 
@@ -470,8 +489,8 @@ function renderSessions() {
 
         <div class="sessionDate">
             ${session.messages.length > 0
-        ? formatSessionDate(session.updatedAt)
-        : ""}
+                    ? formatSessionDate(session.updatedAt)
+                    : ""}
         </div>
     </div>
 
@@ -586,7 +605,7 @@ function renderChat() {
     //hide session title 
     // chatTitle.textContent =
     //     session.title;
-        
+
 
     if (
         !session.messages.length
@@ -647,8 +666,8 @@ function renderMessage(
         "userBubble";
 
     user.innerHTML = question
-    .replace(/^<p>/i, "")
-    .replace(/<\/p>$/i, "");
+        .replace(/^<p>/i, "")
+        .replace(/<\/p>$/i, "");
 
     messagesContainer.appendChild(
         user
@@ -663,9 +682,17 @@ function renderMessage(
         "aiCard";
 
     card.innerHTML = `
-<div class="aiHeader"
+<div class="aiHeader aiHeaderRow"
      style="background:${getModelColor(modelName)}">
-${escapeHtml(modelName || "Assistant")}
+
+    <span>
+        ${escapeHtml(modelName || "Assistant")}
+    </span>
+
+    <button class="expandResponseBtn">
+        ⛶
+    </button>
+
 </div>
 
 <div class="aiBody">
@@ -709,14 +736,28 @@ function renderComparisonMessageFromStorage(
 <div class="comparisonCards">
 
     <div class="aiCard">
-        <div class="aiHeader modelA"></div>
+        <div class="aiHeader aiHeaderRow modelA">
+    <span class="modelATitle"></span>
+
+    <div class="headerButtons">
+        <button class="splitExpandBtn">⇱</button>
+        <button class="expandResponseBtn">⛶</button>
+    </div>
+</div>
 
         <div class="aiBody modelAContent">
         </div>
     </div>
 
     <div class="aiCard">
-       <div class="aiHeader modelB"></div>
+       <div class="aiHeader aiHeaderRow modelB">
+    <span class="modelBTitle"></span>
+
+    <div class="headerButtons">
+        <button class="splitExpandBtn">⇱</button>
+        <button class="expandResponseBtn">⛶</button>
+    </div>
+</div>
 
         <div class="aiBody modelBContent">
         </div>
@@ -740,18 +781,20 @@ function renderComparisonMessageFromStorage(
         );
 
     const modelAHeader =
-        wrapper.querySelector(
-            ".modelA"
-        );
+        wrapper.querySelector(".modelA");
 
     const modelBHeader =
-        wrapper.querySelector(
-            ".modelB"
-        );
+        wrapper.querySelector(".modelB");
+
+    const modelATitle =
+        wrapper.querySelector(".modelATitle");
+
+    const modelBTitle =
+        wrapper.querySelector(".modelBTitle");
 
     if (responses[0]) {
 
-        modelAHeader.textContent =
+        modelATitle.textContent =
             responses[0].model || "Model A";
 
         modelAHeader.style.backgroundColor =
@@ -766,7 +809,7 @@ function renderComparisonMessageFromStorage(
 
     if (responses[1]) {
 
-        modelBHeader.textContent =
+        modelBTitle.textContent =
             responses[1].model || "Model B";
 
         modelBHeader.style.backgroundColor =
@@ -777,8 +820,6 @@ function renderComparisonMessageFromStorage(
 
         modelBContent.textContent =
             responses[1].answer || "";
-
-
     }
 
     return wrapper;
@@ -814,17 +855,29 @@ function renderComparisonMessage(
 <div class="comparisonCards">
 
     <div class="aiCard">
-        <div class="aiHeader modelA"></div>
+        <div class="aiHeader aiHeaderRow modelA">
+            <span class="modelATitle"></span>
 
-        <div class="aiBody modelAContent">
+            <div class="headerButtons">
+                <button class="splitExpandBtn">⇱</button>
+                <button class="expandResponseBtn">⛶</button>
+            </div>
         </div>
+
+        <div class="aiBody modelAContent"></div>
     </div>
 
     <div class="aiCard">
-       <div class="aiHeader modelB"></div>
+        <div class="aiHeader aiHeaderRow modelB">
+            <span class="modelBTitle"></span>
 
-        <div class="aiBody modelBContent">
+            <div class="headerButtons">
+                <button class="splitExpandBtn">⇱</button>
+                <button class="expandResponseBtn">⛶</button>
+            </div>
         </div>
+
+        <div class="aiBody modelBContent"></div>
     </div>
 
 </div>
@@ -1652,7 +1705,7 @@ function setGenerating(value) {
 
     sendButton.disabled = value;
 
-   
+
 }
 
 // -----------------------------------------------------
@@ -2001,11 +2054,8 @@ async function sendMessage() {
         const modelB =
             displayModelName(selectedModels[1]);
 
-        comparisonUI.modelAHeader.textContent =
-            modelA;
-
-        comparisonUI.modelBHeader.textContent =
-            modelB;
+        comparisonUI.modelAHeader.querySelector(".modelATitle").textContent = modelA;
+        comparisonUI.modelBHeader.querySelector(".modelBTitle").textContent = modelB;
 
         comparisonUI.modelAHeader.style.backgroundColor =
             getModelColor(modelA);
@@ -2057,9 +2107,8 @@ async function sendMessage() {
 
                 const combined =
                     item.responses
-                        .map(r =>
-                            `[${r.model}]: ${r.answer}`
-                        )
+                        .map(r => r.answer)
+                        
                         .join("\n\n");
 
                 history.push({
@@ -2271,7 +2320,7 @@ promptInput
         }
     );
 
-    const expander =
+const expander =
     document.getElementById(
         "composerExpander"
     );
@@ -2332,10 +2381,7 @@ document.addEventListener(
         composerExpanded =
             newHeight > 200;
 
-        expander.textContent =
-            composerExpanded
-                ? "⌄"
-                : "⌃";
+
     }
 );
 
@@ -2348,6 +2394,222 @@ document.addEventListener(
 );
 
 
+const sidebar =
+    document.querySelector("aside");
+
+const sidebarExpander =
+    document.getElementById(
+        "sidebarExpander"
+    );
+
+let resizingSidebar = false;
+
+sidebarExpander?.addEventListener(
+    "mousedown",
+    () => {
+        resizingSidebar = true;
+        document.body.style.userSelect = "none";
+    }
+);
+
+document.addEventListener(
+    "mousemove",
+    (e) => {
+
+        if (!resizingSidebar) return;
+
+        const newWidth =
+            Math.max(
+                300,
+                Math.min(
+                    e.clientX - 70,
+                    890
+                )
+            );
+
+        sidebar.style.width =
+            `${newWidth}px`;
+
+        sidebar.style.minWidth =
+            `${newWidth}px`;
+
+        sidebar.style.maxWidth =
+            `${newWidth}px`;
+    }
+);
+
+document.addEventListener(
+    "mouseup",
+    () => {
+
+        resizingSidebar = false;
+
+        document.body.style.userSelect =
+            "";
+    }
+);
+
+
+
+
+
+document.addEventListener(
+    "click",
+    (e) => {
+
+        const btn =
+            e.target.closest(
+                ".expandResponseBtn"
+            );
+
+        if (!btn) return;
+
+        const card =
+            btn.closest(".aiCard");
+
+        const header =
+            card.querySelector(".aiHeader");
+
+        const body =
+            card.querySelector(".aiBody");
+
+        const modal =
+            document.getElementById(
+                "responseModal"
+            );
+
+        const title =
+            header.querySelector("span");
+
+        document.getElementById(
+            "responseModalTitle"
+        ).textContent =
+            title?.textContent || "";
+
+        document.getElementById(
+            "responseModalContent"
+        ).textContent =
+            body.textContent;
+
+        document.getElementById(
+            "responseModalHeader"
+        ).style.backgroundColor =
+            getComputedStyle(header)
+                .backgroundColor;
+
+        modal.classList.remove(
+            "hidden"
+        );
+    }
+);
+document
+    .getElementById(
+        "closeResponseModal"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById(
+                    "responseModal"
+                )
+                .classList.add(
+                    "hidden"
+                );
+        }
+    );
+
+
+document.addEventListener("click", (e) => {
+
+    const btn = e.target.closest(".splitExpandBtn");
+
+    if (!btn) return;
+
+    const comparisonCards =
+        btn.closest(".comparisonCards");
+
+    if (!comparisonCards) return;
+
+    const cards =
+        comparisonCards.querySelectorAll(".aiCard");
+
+    const modal =
+        document.getElementById(
+            "comparisonExpandModal"
+        );
+
+    const content =
+        document.getElementById(
+            "comparisonExpandContent"
+        );
+
+    content.innerHTML = "";
+
+    cards.forEach(card => {
+
+        const clone = card.cloneNode(true);
+
+        clone.style.height = "100%";
+
+        // Remove all expand buttons in modal
+        clone.querySelectorAll(
+            ".splitExpandBtn, .expandResponseBtn"
+        ).forEach(btn => btn.remove());
+
+        const body =
+            clone.querySelector(".aiBody");
+
+        body.style.maxHeight = "none";
+        body.style.height =  "100%";
+        body.style.overflowY = "auto";
+
+        content.appendChild(clone);
+    });
+
+    modal.classList.remove("hidden");
+});
+
+document
+    .getElementById("closeComparisonExpand")
+    .addEventListener("click", () => {
+
+        document
+            .getElementById(
+                "comparisonExpandModal"
+            )
+            .classList.add("hidden");
+    });
+
+
+document
+    .getElementById(
+        "halfExpandBackdrop"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .querySelectorAll(
+                    ".halfExpanded"
+                )
+                .forEach(card =>
+                    card.classList.remove(
+                        "halfExpanded"
+                    )
+                );
+
+            document
+                .getElementById(
+                    "halfExpandBackdrop"
+                )
+                .classList.add(
+                    "hidden"
+                );
+        }
+    );
 
 // =====================================================
 // END OF FILE

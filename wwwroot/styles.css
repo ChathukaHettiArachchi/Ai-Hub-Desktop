@@ -81,11 +81,26 @@ p {
     color: white;
 }
 
-.sessionContent {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.sessionContent{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    width:100%;
 }
+
+.sessionText{
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+
+    flex:1;
+    min-width:0;
+}
+
+.deleteSessionBtn{
+    flex-shrink:0;
+}
+
 
 .deleteSessionBtn {
     border: none;
@@ -93,6 +108,7 @@ p {
     cursor: pointer;
     opacity: .7;
     color: inherit;
+    scale: 0.8;
 }
 
 .deleteSessionBtn:hover {
@@ -108,6 +124,7 @@ p {
 }
 
 .userBubble {
+    position: relative;
     margin-left: auto;
     max-width: 75%;
     text-align: right;
@@ -123,6 +140,15 @@ p {
 .userBubble [style*="background-color: rgb(255, 255, 0)"] {
     color: #000 !important;
 }
+
+.messageTimestamp {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: right;
+}
+
+
 
 /* ========================================
    AI CARDS
@@ -390,25 +416,26 @@ button:disabled {
 
 
 
-.sessionContent{
+/* .sessionContent{
     display:flex;
     justify-content:space-between;
     align-items:center;
     width:100%;
-}
+} */
 
-.sessionText{
+/* .sessionText{
     display:flex;
     flex-direction:column;
     overflow:hidden;
-}
+} */
 
 .sessionTitle{
     font-size:14px;
     font-weight:500;
-    white-space:nowrap;
+
     overflow:hidden;
     text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 .sessionDate{
@@ -433,23 +460,23 @@ button:disabled {
 
 #composerExpander {
     position: absolute;
-    top: -12px;
+    top: -5px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) rotate(90deg);
 
     width: 60px;
     height: 20px;
 
-    background: white;
+    /* background: white;
     border: 1px solid #cbd5e1;
-    border-radius: 999px;
+    border-radius: 999px; */
 
     display: flex;
     align-items: center;
     justify-content: center;
 
     cursor: ns-resize;
-    z-index: 999;
+    /* z-index: 999; */
 }
 
 .chatComposerCentered {
@@ -465,7 +492,67 @@ button:disabled {
     transform: none;
 }
 
+#sidebarExpander {
+    position: relative;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 80px;
+    cursor: ew-resize;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
+
+
+
+/* expanded response css */
+.aiHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.expandResponseBtn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.expandResponseBtn:hover {
+    opacity: .8;
+}
+
+
+
+.aiCard.halfExpanded {
+    position: fixed;
+    top: 5%;
+    left: 25%;
+    width: 50vw;
+    height: 90vh;
+    z-index: 9999;
+    background: white;
+    box-shadow: 0 0 30px rgba(0,0,0,.25);
+}
+
+.aiCard.halfExpanded .aiBody {
+    height: calc(90vh - 60px);
+    overflow-y: auto;
+}
+
+
+#responseModalContent {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    height: auto;
+    max-height: none;
+}
 
 
 
@@ -480,4 +567,15 @@ button:disabled {
 
 .userBubble p {
     margin: 0 26px !important;
+}
+
+.note-editor,
+.note-editable {
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+    overflow-x: hidden;
 }
