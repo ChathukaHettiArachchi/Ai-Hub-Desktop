@@ -15,7 +15,21 @@ builder.Services.AddHttpClient("local-engine", client =>
     client.Timeout = TimeSpan.FromMinutes(30);
 });
 
+builder.Services.AddSingleton<TitleGeneratorRunner>();
+
+builder.Services.AddSingleton<TitleGeneratorService>();
+
 var app = builder.Build();
+
+var titleRunner =
+    app.Services.GetRequiredService<TitleGeneratorRunner>();
+
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    titleRunner.Stop();
+});
+
+
 var contentRoot = app.Environment.ContentRootPath;
 var modelsDirectory = Path.Combine(contentRoot, "Models");
 var settingsPath = Path.Combine(contentRoot, "engine-settings.json");
@@ -389,7 +403,21 @@ _ = Task.Run(async () =>
     });
 });
 
+_ = Task.Run(async () =>
+{
+    await Task.Delay(1000);
 
+    try
+    {
+        titleRunner.Start();
+
+        Console.WriteLine("Title generator started.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+});
 
 _ = Task.Run(async () =>
 {
@@ -438,10 +466,22 @@ _ = Task.Run(async () =>
             Console.WriteLine("Browser disconnected. Closing application.");
 
             engineRunner.Stop();
-
+            titleRunner.Stop();
             Environment.Exit(0);
         }
     }
+});
+
+app.MapPost("/api/title",
+    async (
+        TitleRequest request,
+        TitleGeneratorService service) =>
+{
+    var title =
+        await service.GenerateTitle(request.Text);
+
+    return Results.Ok(
+        new TitleResponse(title));
 });
 
 

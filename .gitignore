@@ -22,6 +22,9 @@ publish/
 Models/
 *.gguf
 
+# Title Generator
+TitleGenerator/
+
 # llama.cpp binaries
 engine/
 

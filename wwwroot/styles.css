@@ -106,9 +106,9 @@ p {
     border: none;
     background: transparent;
     cursor: pointer;
-    opacity: .7;
+    opacity: .9;
     color: inherit;
-    scale: 0.8;
+    scale: 0.9;
 }
 
 .deleteSessionBtn:hover {
@@ -137,13 +137,14 @@ p {
     word-break: break-word;
 }
 
-.userBubble [style*="background-color: rgb(255, 255, 0)"] {
+
+/* .userBubble [style*="background-color: rgb(255, 255, 0)"] {
     color: #000 !important;
-}
+} */
 
 .messageTimestamp {
     margin-top: 6px;
-    font-size: 11px;
+    font-size: 9px;
     color: #94a3b8;
     text-align: right;
 }
@@ -183,12 +184,22 @@ p {
   
 }
 
-.aiBody {
-    padding: 16px;
-    white-space: pre-wrap;
-    line-height: 1.7;
-    word-break: break-word;
+
+.headerRight{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;   
 }
+
+.aiCardTimestamp{
+    margin-left:5px;
+    font-size:9px;
+    color:rgba(255,255,255,.8);
+    line-height:1;
+    text-align:right;
+    white-space:nowrap;
+}
+
 
 /* ========================================
    MODEL CHIPS
@@ -401,7 +412,12 @@ button:disabled {
     min-height:150px;
     max-height:300px;
     overflow-y:auto;
+    padding: 16px;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    word-break: break-word;
 }
+
 
 .aiBody.streaming::after{
     content:"▋";
@@ -522,6 +538,10 @@ button:disabled {
     color: white;
     cursor: pointer;
     font-size: 16px;
+    padding:5px 0;
+    margin:0;
+    line-height:1;
+    text-align: right;
 }
 
 .expandResponseBtn:hover {
@@ -556,6 +576,123 @@ button:disabled {
 
 
 
+.responseCloseBtn {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.responseCloseBtn img {
+    width: 16px;
+    height: 16px;
+}
+
+.model-chip.noVision {
+    position: relative;
+    opacity: .55;
+    pointer-events: none;
+}
+
+/* First diagonal */
+.model-chip.noVision::before,
+.model-chip.noVision::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 50%;
+    height: 2px;
+    background: #ef4444;
+    border-radius: 2px;
+    transform-origin: center;
+    pointer-events: none;
+}
+
+/* \ */
+.model-chip.noVision::before {
+    transform: rotate(18deg);
+}
+
+/* / */
+.model-chip.noVision::after {
+    transform: rotate(-18deg);
+}
+
+#modelList{
+    margin-bottom:2px;
+}
+
+
+
+
+.editIcon {
+    display: inline-block;
+    margin-bottom: 2px;
+    color: #000;
+    font-size: 16px;
+}
+
+.session .editIcon {
+    content: url("/images/edit.png");
+         filter: invert(1);
+}
+
+.session.active .editIcon {
+    content: url("/images/edit.png");
+      filter: none;
+}
+
+.sessionTitleEditor{
+    width:100%;
+    border:2px solid #60a5fa;
+    border-radius:6px;
+    background:transparent;
+    padding:2px 6px;
+    box-sizing:border-box;
+}
+
+.session.active .sessionTitleEditor{
+    border-color:#ffffff;
+}
+
+.sessionTitleInput{
+    width:100%;
+    border:none;
+    outline:none;
+    background:transparent;
+    color:inherit;
+    font-size:14px;
+    font-weight:500;
+    font-family:inherit;
+    padding:0;
+    margin:0;
+
+    pointer-events:none;
+}
+
+.sessionTitleInput.editing{
+    pointer-events:auto;
+    cursor:text;
+}
+
+
+
+/* loading gif */
+
+.loadingGif{
+    width:70px;
+    height:70px;
+    display:block;
+    margin:80px auto;
+}
+
+
+
+
 /* summernote styles */
 .note-statusbar {
     display: none !important;
@@ -566,7 +703,7 @@ button:disabled {
 }
 
 .userBubble p {
-    margin: 0 26px !important;
+    margin: 0  !important;
 }
 
 .note-editor,

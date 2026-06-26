@@ -28,21 +28,21 @@ function showPopup(title, message) {
 
 document.getElementById("privateChatBtn")?.addEventListener("click", () => {
     showPopup(
-        "Feature Unavailable",
+        "",
         "Private Chat is not available in the Desktop version."
     );
 });
 
 document.getElementById("myLinksBtn")?.addEventListener("click", () => {
     showPopup(
-        "Under Construction",
+        "",
         "My Links is currently under construction."
     );
 });
 
 document.getElementById("workpadBtn")?.addEventListener("click", () => {
     showPopup(
-        "Under Construction",
+        "",
         "Workpad is currently under construction."
     );
 });
@@ -66,7 +66,7 @@ const MicButton = function (context) {
     return ui.button({
         contents: `
             <img src="/images/mic.png"
-                 style="width:16px;height:16px;">
+                 style="width:16px;height:20px;scale: 0.8;">
         `,
         tooltip: 'Voice Input',
         click: function () {
@@ -79,7 +79,9 @@ $(document).ready(function () {
     $('#prompt').summernote({
         placeholder: 'Message the selected agent(s)...',
         tabsize: 2,
+        fontFamily: "'Montserrat', sans-serif",
         height: 110,
+
         disableResizeEditor: true,
 
         buttons: { mic: MicButton },
@@ -106,7 +108,11 @@ $(document).ready(function () {
 
                     $('#send').trigger('click');
                 }
-            }
+            },
+
+            onChange: function () {
+                updateVisionSupport();
+            },
         }
     });
 
@@ -270,10 +276,7 @@ function loadSessions() {
 
             if (!session.updatedAt) {
 
-                session.updatedAt =
-                    new Date(
-                        Number(session.id)
-                    ).toISOString();
+
             }
         });
 
@@ -388,6 +391,30 @@ function formatSessionDate(dateString) {
 }
 
 
+function formatMessageTimestamp(dateString) {
+
+    const date = new Date(dateString);
+
+    const year = date.getFullYear();
+
+    const month = date.toLocaleString("en-US", {
+        month: "short"
+    });
+
+    const day = String(date.getDate()).padStart(2, "0");
+
+    const weekday = date.toLocaleString("en-US", {
+        weekday: "short"
+    });
+
+    const time = date.toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
+
+    return `${year} ${month} ${day} ${weekday} | ${time}`;
+}
 
 
 const filterBtn =
@@ -420,7 +447,7 @@ function updateClock() {
         `${now.getFullYear()} ` +
         `${now.toLocaleString("en-US", { month: "short" })} ` +
         `${String(now.getDate()).padStart(2, "0")} ` +
-        `${now.toLocaleString("en-US", { weekday: "short" }).toLowerCase()} | ` +
+        `${now.toLocaleString("en-US", { weekday: "short" })} | ` +
         `${now.toLocaleString("en-US", {
             hour: "numeric",
             minute: "2-digit",
@@ -436,17 +463,26 @@ setInterval(updateClock, 1000);
 
 
 
+function getSessionFirstMessageTime(session) {
+
+    if (session.messages.length > 0) {
+        return session.messages[0].timestamp;
+    }
+
+    return session.createdAt;
+}
+
+
+
 function renderSessions() {
 
     sessionList.innerHTML = "";
 
     sessions.sort((a, b) => {
 
-        const dateA =
-            new Date(a.updatedAt);
+        const dateA = new Date(getSessionFirstMessageTime(a));
 
-        const dateB =
-            new Date(b.updatedAt);
+        const dateB = new Date(getSessionFirstMessageTime(b));
 
         return sortDescending
             ? dateB - dateA
@@ -488,15 +524,23 @@ function renderSessions() {
         </div>
 
         <div class="sessionDate">
-            ${session.messages.length > 0
-                    ? formatSessionDate(session.updatedAt)
+          ${session.messages.length > 0
+                    ? formatSessionDate(getSessionFirstMessageTime(session))
                     : ""}
         </div>
     </div>
 
     <button
+        class="editSessionBtn"
+        data-id="${session.id}"
+        title="Rename">
+        <img src="/images/edit.png" alt="Edit" class="editIcon" >
+    </button>
+
+    <button
         class="deleteSessionBtn"
-        data-id="${session.id}">
+        data-id="${session.id}"
+        title="Delete">
         <img src="/images/delete.png" alt="Delete" class="deleteIcon">
     </button>
 
@@ -548,6 +592,66 @@ function renderSessions() {
                     }
                 }
             );
+
+
+            const editBtn = div.querySelector(".editSessionBtn");
+
+            editBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+
+                const titleElement = div.querySelector(".sessionTitle");
+
+                const wrapper = document.createElement("div");
+                wrapper.className = "sessionTitleEditor";
+
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = session.title;
+                input.className = "sessionTitleInput";
+
+                wrapper.appendChild(input);
+
+                const dateElement = div.querySelector(".sessionDate");
+
+                div.querySelector(".sessionText").insertBefore(wrapper, dateElement);
+                titleElement.remove();
+
+                input.focus();
+                input.select();
+
+                input.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                });
+
+                input.addEventListener("mousedown", (e) => {
+                    e.stopPropagation();
+                });
+
+                input.classList.add("editing");
+
+                function saveTitle() {
+                    input.classList.remove("editing");
+                    const newTitle = input.value.trim();
+
+                    session.title = newTitle || "Untitled Chat";
+
+                    saveSessions();
+                    renderSessions();
+                }
+
+                input.addEventListener("blur", saveTitle);
+
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        input.blur();
+                    }
+
+                    if (e.key === "Escape") {
+                        input.classList.remove("editing");
+                        renderSessions();
+                    }
+                });
+            });
 
             sessionList.appendChild(
                 div
@@ -634,7 +738,8 @@ function renderChat() {
 
                 renderComparisonMessageFromStorage(
                     message.question,
-                    message.responses
+                    message.responses,
+                    message.timestamp
                 );
             }
             // Handle single response mode
@@ -642,7 +747,8 @@ function renderChat() {
                 renderMessage(
                     message.question,
                     message.answer,
-                    message.model
+                    message.model,
+                    message.timestamp
                 );
             }
         }
@@ -651,10 +757,12 @@ function renderChat() {
     scrollToBottom();
 }
 
+
 function renderMessage(
     question,
     answer,
-    modelName
+    modelName,
+    timestamp
 ) {
 
     const user =
@@ -665,9 +773,17 @@ function renderMessage(
     user.className =
         "userBubble";
 
-    user.innerHTML = question
+    const formattedTime =
+        formatMessageTimestamp(timestamp);
+
+    const cleanQuestion = question
         .replace(/^<p>/i, "")
-        .replace(/<\/p>$/i, "");
+        .replace(/<\/p>$/i, "")
+        .replace(/<p>/gi, "")
+        .replace(/<\/p>/gi, "<br>")
+        .replace(/(<br\s*\/?>)+$/i, "");
+
+    user.innerHTML = `${cleanQuestion}<div class="messageTimestamp">Asked on ${formattedTime}</div>`;
 
     messagesContainer.appendChild(
         user
@@ -685,18 +801,26 @@ function renderMessage(
 <div class="aiHeader aiHeaderRow"
      style="background:${getModelColor(modelName)}">
 
-    <span>
-        ${escapeHtml(modelName || "Assistant")}
-    </span>
+    <div class="headerLeft">
+        <span class="modelTitle">
+            ${escapeHtml(modelName || "Assistant")}
+        </span>
+
+        <span class="aiCardTimestamp">
+            Responded on ${formattedTime}
+        </span>
+    </div>
 
     <button class="expandResponseBtn">
-        ⛶
+        <img src="/images/ExpandSinglePopup.png"
+             class="w-4 h-4"
+             title="Full screen">
     </button>
 
 </div>
 
 <div class="aiBody">
-${escapeHtml(answer || "")}
+    ${answer ? escapeHtml(answer) : '<img src="/images/loading.gif" class="loadingGif">'}
 </div>
 `;
 
@@ -704,14 +828,16 @@ ${escapeHtml(answer || "")}
         card
     );
 
-    return card.querySelector(
-        ".aiBody"
-    );
+    const body = card.querySelector(".aiBody");
+    body.classList.add("loading");
+
+    return body;
 }
 
 function renderComparisonMessageFromStorage(
     question,
-    responses
+    responses,
+    timestamp
 ) {
 
     const user =
@@ -720,7 +846,17 @@ function renderComparisonMessageFromStorage(
     user.className =
         "userBubble";
 
-    user.innerHTML = question;
+    const formattedTime =
+        formatMessageTimestamp(timestamp);
+
+    const cleanQuestion = question
+        .replace(/^<p>/i, "")
+        .replace(/<\/p>$/i, "")
+        .replace(/<p>/gi, "")
+        .replace(/<\/p>/gi, "<br>")
+        .replace(/(<br\s*\/?>)+$/i, "");
+
+    user.innerHTML = `${cleanQuestion}<div class="messageTimestamp">Asked on ${formattedTime}</div>`;
 
     messagesContainer.appendChild(
         user
@@ -736,13 +872,32 @@ function renderComparisonMessageFromStorage(
 <div class="comparisonCards">
 
     <div class="aiCard">
-        <div class="aiHeader aiHeaderRow modelA">
-    <span class="modelATitle"></span>
+       <div class="aiHeader aiHeaderRow modelA">
+
+    <div class="headerLeft">
+        <span class="modelATitle"></span>
+
+        <span class="aiCardTimestamp">
+            Responded on ${formattedTime}
+        </span>
+    </div>
 
     <div class="headerButtons">
-        <button class="splitExpandBtn">⇱</button>
-        <button class="expandResponseBtn">⛶</button>
+        <button class="splitExpandBtn">
+            <img src="/images/ExpandTwoPopups.png"
+                 alt="Split Expander"
+                 title="Expand Side by Side"
+                 class="w-8 h-4 mr-1.5">
+        </button>
+
+        <button class="expandResponseBtn">
+            <img src="/images/ExpandSinglePopup.png"
+                 alt="Full Screen"
+                 title="Full screen"
+                 class="w-4 h-4">
+        </button>
     </div>
+
 </div>
 
         <div class="aiBody modelAContent">
@@ -750,18 +905,37 @@ function renderComparisonMessageFromStorage(
     </div>
 
     <div class="aiCard">
-       <div class="aiHeader aiHeaderRow modelB">
-    <span class="modelBTitle"></span>
+    <div class="aiHeader aiHeaderRow modelB">
+
+    <div class="headerLeft">
+        <span class="modelBTitle"></span>
+
+        <span class="aiCardTimestamp">
+            Responded on ${formattedTime}
+        </span>
+    </div>
 
     <div class="headerButtons">
-        <button class="splitExpandBtn">⇱</button>
-        <button class="expandResponseBtn">⛶</button>
+            <button class="splitExpandBtn">
+                <img src="/images/ExpandTwoPopups.png"
+                     alt="Split Expander"
+                     title="Expand Side by Side"
+                     class="w-8 h-4 mr-1.5">
+            </button>
+
+            <button class="expandResponseBtn">
+                <img src="/images/ExpandSinglePopup.png"
+                     alt="Expander"
+                     title="Full screen"
+                     class="w-4 h-4">
+            </button>
+        </div>
+
+    </div>
+
+    <div class="aiBody modelBContent">
     </div>
 </div>
-
-        <div class="aiBody modelBContent">
-        </div>
-    </div>
 
 </div>
 `;
@@ -826,7 +1000,8 @@ function renderComparisonMessageFromStorage(
 }
 
 function renderComparisonMessage(
-    question
+    question,
+    timestamp
 ) {
 
     const user =
@@ -835,7 +1010,19 @@ function renderComparisonMessage(
     user.className =
         "userBubble";
 
-    user.innerHTML = question;
+
+
+    const formattedTime =
+        formatMessageTimestamp(timestamp);
+
+    const cleanQuestion = question
+        .replace(/^<p>/i, "")
+        .replace(/<\/p>$/i, "")
+        .replace(/<p>/gi, "")
+        .replace(/<\/p>/gi, "<br>")
+        .replace(/(<br\s*\/?>)+$/i, "");
+
+    user.innerHTML = `${cleanQuestion}<div class="messageTimestamp">Asked on ${formattedTime}</div>`;
 
     messagesContainer.appendChild(
         user
@@ -847,6 +1034,8 @@ function renderComparisonMessage(
     wrapper.className =
         "comparisonWrapper";
 
+
+
     wrapper.innerHTML = `
 <div class="comparisonStatus">
     Generating responses...
@@ -855,29 +1044,72 @@ function renderComparisonMessage(
 <div class="comparisonCards">
 
     <div class="aiCard">
-        <div class="aiHeader aiHeaderRow modelA">
-            <span class="modelATitle"></span>
+      <div class="aiHeader aiHeaderRow modelA">
 
-            <div class="headerButtons">
-                <button class="splitExpandBtn">⇱</button>
-                <button class="expandResponseBtn">⛶</button>
-            </div>
-        </div>
+    <div class="headerLeft">
+        <span class="modelATitle"></span>
 
-        <div class="aiBody modelAContent"></div>
+        <span class="aiCardTimestamp">
+            Responded on ${formattedTime}
+        </span>
+    </div>
+
+    <div class="headerButtons">
+        <button class="splitExpandBtn">
+            <img src="/images/ExpandTwoPopups.png"
+                 alt="Split Expander"
+                 title="Expand Side by Side"
+                 class="w-8 h-4 mr-1.5">
+        </button>
+
+        <button class="expandResponseBtn">
+            <img src="/images/ExpandSinglePopup.png"
+                 alt="Expander"
+                 title="Full screen"
+                 class="w-4 h-4">
+        </button>
+    </div>
+
+
+</div>
+
+       <div class="aiBody modelAContent">
+    <img src="/images/loading.gif" class="loadingGif">
+</div>
     </div>
 
     <div class="aiCard">
         <div class="aiHeader aiHeaderRow modelB">
-            <span class="modelBTitle"></span>
+  
 
-            <div class="headerButtons">
-                <button class="splitExpandBtn">⇱</button>
-                <button class="expandResponseBtn">⛶</button>
-            </div>
-        </div>
+    <div class="headerLeft">
+        <span class="modelBTitle"></span>
 
-        <div class="aiBody modelBContent"></div>
+        <span class="aiCardTimestamp">
+            Responded on ${formattedTime}
+        </span>
+    </div>
+
+    <div class="headerButtons">
+        <button class="splitExpandBtn">
+            <img src="/images/ExpandTwoPopups.png"
+                 alt="Split Expander"
+                 title="Expand Side by Side"
+                 class="w-8 h-4 mr-1.5">
+        </button>
+
+        <button class="expandResponseBtn">
+            <img src="/images/ExpandSinglePopup.png"
+                 alt="Expander"
+                 title="Full screen"
+                 class="w-4 h-4">
+        </button>
+    </div>
+</div>
+
+     <div class="aiBody modelBContent">
+    <img src="/images/loading.gif" class="loadingGif">
+</div>
     </div>
 
 </div>
@@ -1337,6 +1569,11 @@ async function loadModels() {
 
         availableModels =
             data.models || [];
+        // Demo only - add a fake Gemma Vision model
+        availableModels.push({
+            name: "Gemma-vision",
+            path: "demo-gemma-vision"
+        });
 
         modelSelect.append(
             new Option(
@@ -1395,6 +1632,19 @@ function renderModelChips() {
 
 
             chip.onclick = () => {
+
+
+                if (
+                    chip.classList.contains("noVision")
+                ) {
+
+                    showPopup(
+                        "",
+                        `${displayModelName(model.name)} does not support image or graphic inputs.`
+                    );
+
+                    return;
+                }
 
                 const index =
                     selectedModels.indexOf(
@@ -1457,6 +1707,8 @@ function renderModelChips() {
             );
         }
     );
+    updateVisionSupport();
+
 }
 
 // =====================================================
@@ -2003,10 +2255,43 @@ async function sendMessage() {
 
         if (session.messages.length === 0) {
 
-            session.title =
-                plainQuestion.length > 40
-                    ? plainQuestion.slice(0, 40) + "..."
-                    : plainQuestion;
+            session.title = "Generating...";
+
+            renderSessions();
+
+            try {
+
+                const response = await fetch("/api/title", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: plainQuestion
+                    })
+                });
+
+                if (response.ok) {
+
+                    const data =
+                        await response.json();
+
+                    session.title =
+                        data.title || plainQuestion;
+                }
+                else {
+
+                    session.title =
+                        plainQuestion;
+                }
+            }
+            catch {
+
+                session.title =
+                    plainQuestion;
+            }
+
+            saveSessions();
 
             renderSessions();
         }
@@ -2023,6 +2308,8 @@ async function sendMessage() {
 
         answer: "",
 
+        timestamp: new Date().toISOString(),
+
         model: !compareMode
             ? displayModelName(selectedModels[0])
             : undefined
@@ -2033,8 +2320,7 @@ async function sendMessage() {
     );
     updateComposerPosition();
 
-    session.updatedAt =
-        new Date().toISOString();
+
 
     saveSessions();
     renderSessions();
@@ -2046,7 +2332,8 @@ async function sendMessage() {
 
         comparisonUI =
             renderComparisonMessage(
-                question
+                question,
+                chatItem.timestamp
             );
         const modelA =
             displayModelName(selectedModels[0]);
@@ -2072,7 +2359,8 @@ async function sendMessage() {
             renderMessage(
                 question,
                 "",
-                displayModelName(selectedModels[0])
+                displayModelName(selectedModels[0]),
+                chatItem.timestamp
             );
     }
 
@@ -2108,7 +2396,7 @@ async function sendMessage() {
                 const combined =
                     item.responses
                         .map(r => r.answer)
-                        
+
                         .join("\n\n");
 
                 history.push({
@@ -2162,8 +2450,7 @@ async function sendMessage() {
             chatItem.answer =
                 answer;
 
-            session.updatedAt =
-                new Date().toISOString();
+
 
             saveSessions();
 
@@ -2174,7 +2461,13 @@ async function sendMessage() {
         else {
 
             comparisonUI.status.textContent =
-                "Both models are generating...";
+                "Both models are Thinking...";
+
+            //         comparisonUI.status.innerHTML = `
+            // <img src="/images/loading.gif"
+            //      alt="Loading"
+            //      class="loadingGif">
+            //`;
 
             const promiseA =
                 generateStreamingAnswer(
@@ -2224,8 +2517,7 @@ async function sendMessage() {
                 }
             ];
 
-            session.updatedAt =
-                new Date().toISOString();
+
 
             delete chatItem.answer;
         }
@@ -2236,13 +2528,14 @@ async function sendMessage() {
     catch (err) {
 
         if (!compareMode && answerElement) {
-            answerElement.textContent =
+
+            answerElement.querySelector(".responseLoadingGif")?.remove();
+
+            answerElement.querySelector(".responseContent").textContent =
                 err.message;
         }
 
-        console.error(
-            err
-        );
+        console.error(err);
     }
     finally {
 
@@ -2265,6 +2558,7 @@ async function generateStreamingAnswer(
 ) {
 
     let answer = "";
+    let loadingRemoved = false;
 
     outputElement.classList.add("streaming");
 
@@ -2274,15 +2568,16 @@ async function generateStreamingAnswer(
             modelPath
         },
 
-        token => {
+    token => {
+    // Remove loading gif on first token
+    const gif = outputElement.querySelector(".loadingGif");
+    if (gif) gif.remove();
 
-            answer += token;
-
-            outputElement.textContent =
-                answer;
-
-            scrollToBottom();
-        }
+    outputElement.classList.remove("loading");
+    answer += token;
+    outputElement.textContent = answer;
+    scrollToBottom();
+}
     );
 
     outputElement.classList.remove("streaming");
@@ -2453,55 +2748,64 @@ document.addEventListener(
 
 
 
-document.addEventListener(
-    "click",
-    (e) => {
+document.addEventListener("click", (e) => {
 
-        const btn =
-            e.target.closest(
-                ".expandResponseBtn"
-            );
+    const btn = e.target.closest(".expandResponseBtn");
+    if (!btn) return;
 
-        if (!btn) return;
+    const card = btn.closest(".aiCard");
 
-        const card =
-            btn.closest(".aiCard");
+    const modal =
+        document.getElementById("ExpandModal");
 
-        const header =
-            card.querySelector(".aiHeader");
+    const content =
+        document.getElementById("comparisonExpandContent");
 
-        const body =
-            card.querySelector(".aiBody");
+    content.innerHTML = "";
 
-        const modal =
-            document.getElementById(
-                "responseModal"
-            );
+    // Single-column layout
+    content.classList.remove("grid-cols-2");
+    content.classList.add("grid-cols-1");
 
-        const title =
-            header.querySelector("span");
+    const clone = card.cloneNode(true);
 
-        document.getElementById(
-            "responseModalTitle"
-        ).textContent =
-            title?.textContent || "";
+    clone.style.height = "100%";
 
-        document.getElementById(
-            "responseModalContent"
-        ).textContent =
-            body.textContent;
+    clone.querySelectorAll(
+        ".splitExpandBtn, .expandResponseBtn"
+    ).forEach(btn => btn.remove());
 
-        document.getElementById(
-            "responseModalHeader"
-        ).style.backgroundColor =
-            getComputedStyle(header)
-                .backgroundColor;
+    const header = clone.querySelector(".aiHeader");
 
-        modal.classList.remove(
-            "hidden"
-        );
-    }
-);
+    const closeBtn = document.createElement("button");
+
+    closeBtn.className = "responseCloseBtn";
+
+    closeBtn.innerHTML = `✕`;
+
+    closeBtn.onclick = () => {
+        document
+            .getElementById("ExpandModal")
+            .classList.add("hidden");
+    };
+
+    header.appendChild(closeBtn);
+
+
+    const body = clone.querySelector(".aiBody");
+
+    body.style.height = "100%";
+    body.style.maxHeight = "none";
+    body.style.overflowY = "auto";
+
+    content.appendChild(clone);
+    expandModalMoveable.resetPosition();
+    modal.classList.remove("hidden");
+});
+
+
+
+
 document
     .getElementById(
         "closeResponseModal"
@@ -2537,7 +2841,7 @@ document.addEventListener("click", (e) => {
 
     const modal =
         document.getElementById(
-            "comparisonExpandModal"
+            "ExpandModal"
         );
 
     const content =
@@ -2546,6 +2850,9 @@ document.addEventListener("click", (e) => {
         );
 
     content.innerHTML = "";
+
+    content.classList.remove("grid-cols-1");
+    content.classList.add("grid-cols-2");
 
     cards.forEach(card => {
 
@@ -2558,16 +2865,47 @@ document.addEventListener("click", (e) => {
             ".splitExpandBtn, .expandResponseBtn"
         ).forEach(btn => btn.remove());
 
+        const closeBtn = document.createElement("button");
+
+        closeBtn.className = "responseCloseBtn";
+
+        closeBtn.innerHTML = ` ✕ `;
+
+        closeBtn.onclick = () => {
+
+            clone.remove();
+
+            const remaining =
+                content.querySelectorAll(".aiCard");
+
+            if (remaining.length === 1) {
+
+                content.classList.remove("grid-cols-2");
+                content.classList.add("grid-cols-1");
+
+                remaining[0].style.width = "100%";
+            }
+
+            if (remaining.length === 0) {
+
+                modal.classList.add("hidden");
+            }
+        };
+
+        clone.querySelector(".aiHeader")
+            .appendChild(closeBtn);
+
         const body =
             clone.querySelector(".aiBody");
 
         body.style.maxHeight = "none";
-        body.style.height =  "100%";
+        body.style.height = "100%";
         body.style.overflowY = "auto";
 
         content.appendChild(clone);
     });
 
+    expandModalMoveable.resetPosition();
     modal.classList.remove("hidden");
 });
 
@@ -2577,9 +2915,11 @@ document
 
         document
             .getElementById(
-                "comparisonExpandModal"
+                "ExpandModal"
             )
             .classList.add("hidden");
+
+        expandModalMoveable.resetPosition();
     });
 
 
@@ -2630,3 +2970,46 @@ setInterval(() => {
         method: "POST"
     });
 }, 5000);
+
+
+function modelSupportsVision(modelName) {
+    const name = modelName.toLowerCase();
+
+    return (
+        name.includes("vision") ||
+        name.includes("gemma-vision") ||
+        name.includes("llava") ||
+        name.includes("minicpm-v")
+    );
+}
+
+function updateVisionSupport() {
+
+    const hasImage =
+        document.querySelector(".note-editable img") !== null;
+
+    document.querySelectorAll(".model-chip").forEach((chip, index) => {
+
+        const model = availableModels[index];
+
+        const supported =
+            modelSupportsVision(model.name);
+
+        chip.classList.toggle(
+            "noVision",
+            hasImage && !supported
+        );
+
+        // Automatically remove unsupported selected models
+        if (hasImage && !supported) {
+            selectedModels =
+                selectedModels.filter(x => x !== model.path);
+        }
+    });
+}
+
+// =============================
+// Initialize movable popups
+// =============================
+
+const expandModalMoveable = new ModalMoveable("#expandModalWindow", "#expandModalHeader");

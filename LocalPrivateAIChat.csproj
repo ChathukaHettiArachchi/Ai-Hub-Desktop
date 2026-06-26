@@ -14,4 +14,11 @@
   </None>
 </ItemGroup>
 
+
+<ItemGroup>
+    <None Include="TitleGenerator\**\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+</ItemGroup>
+
 </Project>
